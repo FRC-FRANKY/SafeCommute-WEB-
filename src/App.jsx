@@ -9,6 +9,7 @@ import AdminDashboard from './pages/AdminDashboard.jsx'
 import CommutersManagement from './pages/CommutersManagement.jsx'
 import OperatorManagement from './pages/OperatorManagement.jsx'
 import DatabaseManagement from './pages/DatabaseManagement.jsx'
+import ReportsAnalytics from './pages/ReportsAnalytics.jsx'
 
 function StartupLoading() {
   const navigate = useNavigate()
@@ -37,6 +38,7 @@ export default function App() {
       <Route path="/admin-commuters" element={<CommutersManagement />} />
       <Route path="/admin-operators" element={<OperatorManagement />} />
       <Route path="/admin-database" element={<DatabaseManagement />} />
+      <Route path="/admin-reports" element={<ReportsAnalytics />} />
       <Route path="/dashboard" element={<Navigate to="/operator-dashboard" replace />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

@@ -89,13 +89,13 @@ function KpiCard({ label, value, tone }) {
   )
 }
 
-function QuickActionRow({ onManageCommuters, onOperators, onDatabase }) {
+function QuickActionRow({ onManageCommuters, onOperators, onDatabase, onReports }) {
   const actions = [
     { label: 'Settings', icon: <Settings size={16} />, onClick: () => {} },
     { label: 'Manage Commuters', icon: <Users size={16} />, onClick: onManageCommuters },
     { label: 'Operators', icon: <UserCircle2 size={16} />, onClick: onOperators },
     { label: 'Database', icon: <Database size={16} />, onClick: onDatabase },
-    { label: 'Reports', icon: <FileText size={16} />, onClick: () => {} },
+    { label: 'Reports', icon: <FileText size={16} />, onClick: onReports },
     { label: 'Logs', icon: <Activity size={16} />, onClick: () => {} },
   ]
 
@@ -272,6 +272,7 @@ export default function AdminDashboard() {
           onManageCommuters={() => navigate('/admin-commuters')}
           onOperators={() => navigate('/admin-operators')}
           onDatabase={() => navigate('/admin-database')}
+          onReports={() => navigate('/admin-reports')}
         />
 
         <section className="grid gap-4 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">

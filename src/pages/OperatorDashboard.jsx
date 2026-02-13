@@ -1,18 +1,23 @@
 import React, { useState } from 'react'
+import CCTVCameraModal from '../components/CCTVCameraModal.jsx'
 import {
   Activity,
   Bell,
   BusFront,
+  Clock,
   Compass,
   LogOut,
   MapPin,
   MoreVertical,
   Search,
   Settings,
+  Shield,
+  TrendingUp,
   UserCircle2,
   UserPlus,
   Users,
   Video,
+  Wrench,
 } from 'lucide-react'
 
 function TopNav() {
@@ -74,7 +79,7 @@ function TopNav() {
   )
 }
 
-function StatCard({ label, value, icon, tone }) {
+function StatCard({ label, value, icon, tone, change, changePositive }) {
   const toneClasses = {
     blue: 'from-sky-50 to-sky-100 text-sky-800',
     green: 'from-emerald-50 to-emerald-100 text-emerald-800',
@@ -90,6 +95,11 @@ function StatCard({ label, value, icon, tone }) {
             {label}
           </p>
           <p className="mt-1 text-xl font-semibold">{value}</p>
+          {change != null && (
+            <p className={`mt-0.5 text-[11px] font-semibold ${changePositive ? 'text-emerald-700' : 'text-rose-600'}`}>
+              {change}
+            </p>
+          )}
         </div>
         <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/60 text-slate-700 shadow-sm">
           {icon}
@@ -125,7 +135,7 @@ function TabStrip({ activeTab, onTabChange }) {
   )
 }
 
-function CCTVMonitoring() {
+function CCTVMonitoring({ onViewCamera }) {
   const cameras = [
     { bus: '17', position: 'Front', resolution: 'HD', recording: true, status: 'online', lastUpdate: 'John Doe • 5 mins ago' },
     { bus: '42', position: 'Front', resolution: 'HD', recording: true, status: 'online', lastUpdate: 'Admin User • Yesterday' },
@@ -172,6 +182,7 @@ function CCTVMonitoring() {
             <p className="text-[11px] text-slate-500">Last: {cam.lastUpdate}</p>
             <button
               type="button"
+              onClick={() => onViewCamera(cam)}
               className="mt-auto w-full rounded-full bg-sky-50 py-2 text-xs font-medium text-sky-700 transition hover:bg-sky-100"
             >
               View
@@ -248,6 +259,77 @@ function ConductorsManagement() {
                     title="More actions"
                   >
                     <MoreVertical size={16} />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )
+}
+
+function FleetManagement() {
+  const vehicles = [
+    { id: 'Bus 17', route: 'Blue Line Express', gpsStatus: 'active', capacity: '45/60', location: 'Central Station', lastMaintenance: '2 days ago' },
+    { id: 'Bus 23', route: 'Downtown Loop', gpsStatus: 'active', capacity: '-', location: 'Depot', lastMaintenance: 'Today' },
+    { id: 'Bus 42', route: 'Airport Shuttle', gpsStatus: 'active', capacity: '52/60', location: 'North Terminal', lastMaintenance: '5 days ago' },
+    { id: 'Bus 08', route: 'Coastal Express', gpsStatus: 'active', capacity: '38/60', location: 'South Hub', lastMaintenance: '1 day ago' },
+    { id: 'Bus 24A', route: 'Inner City', gpsStatus: 'active', capacity: '60/60', location: 'Bay 3', lastMaintenance: '3 days ago' },
+  ]
+
+  return (
+    <section className="rounded-3xl bg-white/95 p-5 shadow-xl shadow-sky-900/20">
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <h2 className="text-sm font-semibold text-slate-900">Fleet Management</h2>
+        <button
+          type="button"
+          className="inline-flex items-center gap-2 rounded-full bg-sky-600 px-4 py-2 text-xs font-medium text-white shadow-md transition hover:bg-sky-700"
+        >
+          <BusFront size={16} />
+          Add Vehicle
+        </button>
+      </div>
+
+      <div className="overflow-x-auto rounded-2xl border border-slate-100">
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="border-b border-slate-100 bg-slate-50/80">
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Vehicle ID</th>
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Route</th>
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">GPS Status</th>
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Capacity</th>
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Location</th>
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Last Maintenance</th>
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {vehicles.map((v) => (
+              <tr key={v.id} className="border-b border-slate-50 transition hover:bg-slate-50/50">
+                <td className="px-4 py-3 font-medium text-slate-900">{v.id}</td>
+                <td className="px-4 py-3 text-slate-600">{v.route}</td>
+                <td className="px-4 py-3">
+                  <span className="inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700">
+                    Active
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-slate-600">{v.capacity}</td>
+                <td className="px-4 py-3">
+                  <span className="flex items-center gap-1.5 text-slate-600">
+                    <MapPin size={14} className="text-sky-500" />
+                    {v.location}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-slate-600">{v.lastMaintenance}</td>
+                <td className="px-4 py-3">
+                  <button
+                    type="button"
+                    className="rounded-full p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                    title="Maintenance"
+                  >
+                    <Wrench size={16} />
                   </button>
                 </td>
               </tr>
@@ -421,6 +503,93 @@ function QuickActions() {
   )
 }
 
+function ProgressBar({ label, value, max, unit = '%', tone = 'sky' }) {
+  const toneClasses = {
+    green: 'bg-emerald-500',
+    blue: 'bg-sky-500',
+    purple: 'bg-indigo-500',
+    amber: 'bg-amber-500',
+  }[tone]
+  const percent = max ? Math.round((value / max) * 100) : value
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between text-xs">
+        <span className="font-medium text-slate-700">{label}</span>
+        <span className="font-bold text-slate-900">
+          {max ? `${value}/${max}` : `${value}${unit}`}
+        </span>
+      </div>
+      <div className="h-2.5 overflow-hidden rounded-full bg-slate-100">
+        <div
+          className={`h-full rounded-full transition-all ${toneClasses}`}
+          style={{ width: `${Math.min(percent, 100)}%` }}
+        />
+      </div>
+    </div>
+  )
+}
+
+function PerformanceOverview() {
+  const metrics = [
+    { label: 'On-Time Performance', value: 87, tone: 'green' },
+    { label: 'Safety Rating', value: 4.7, max: 5.0, tone: 'blue' },
+    { label: 'Customer Satisfaction', value: 4.5, max: 5.0, tone: 'purple' },
+    { label: 'Fleet Utilization', value: 82, tone: 'amber' },
+  ]
+
+  return (
+    <section className="rounded-3xl bg-white/95 p-5 shadow-xl shadow-sky-900/20">
+      <h2 className="mb-4 text-sm font-semibold text-slate-900">Performance Overview</h2>
+      <div className="space-y-5">
+        {metrics.map((m) => (
+          <ProgressBar
+            key={m.label}
+            label={m.label}
+            value={m.value}
+            max={m.max}
+            unit="%"
+            tone={m.tone}
+          />
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function MonthlyStatistics() {
+  const stats = [
+    { title: 'Total Trips', value: '10,248', change: '+8%', positive: true, icon: TrendingUp, iconBg: 'bg-sky-100', iconColor: 'text-sky-600' },
+    { title: 'Passengers Served', value: '245,892', change: '+12%', positive: true, icon: Users, iconBg: 'bg-emerald-100', iconColor: 'text-emerald-600' },
+    { title: 'Avg Trip Duration', value: '18 mins', change: '-2 min', positive: true, icon: Clock, iconBg: 'bg-indigo-100', iconColor: 'text-indigo-600' },
+  ]
+
+  return (
+    <section className="rounded-3xl bg-white/95 p-5 shadow-xl shadow-sky-900/20">
+      <h2 className="mb-4 text-sm font-semibold text-slate-900">Monthly Statistics</h2>
+      <div className="space-y-3">
+        {stats.map((s) => (
+          <div
+            key={s.title}
+            className="flex items-center justify-between gap-4 rounded-2xl bg-slate-50/80 px-4 py-3 transition hover:bg-slate-100/80"
+          >
+            <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${s.iconBg} ${s.iconColor}`}>
+              <s.icon size={18} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-medium text-slate-500">{s.title}</p>
+              <p className="text-sm font-bold text-slate-900">{s.value}</p>
+            </div>
+            <span className="shrink-0 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700">
+              {s.change}
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 function ActiveVehicles() {
   const vehicles = [
     {
@@ -485,7 +654,9 @@ function ActiveVehicles() {
 }
 
 export default function OperatorDashboard() {
-  const [activeTab, setActiveTab] = useState('CCTV Monitoring')
+  const [activeTab, setActiveTab] = useState('Analytics')
+  const [cctvModalOpen, setCctvModalOpen] = useState(false)
+  const [selectedCamera, setSelectedCamera] = useState(null)
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-400 via-sky-500 to-sky-700 px-6 py-6">
@@ -504,24 +675,37 @@ export default function OperatorDashboard() {
             label="Daily Trips"
             value="342"
             tone="purple"
-            icon={<Compass size={18} />}
+            icon={<TrendingUp size={18} />}
+            change="+12%"
+            changePositive
           />
           <StatCard
             label="Safety Score"
             value="4.7"
             tone="amber"
-            icon={<Activity size={18} />}
+            icon={<Shield size={18} />}
+            change="-0.2"
+            changePositive={false}
           />
         </section>
 
         <TabStrip activeTab={activeTab} onTabChange={setActiveTab} />
 
         {activeTab === 'CCTV Monitoring' ? (
-          <CCTVMonitoring />
+          <>
+            <CCTVMonitoring onViewCamera={(cam) => { setSelectedCamera(cam); setCctvModalOpen(true) }} />
+            <CCTVCameraModal
+              open={cctvModalOpen}
+              onClose={() => setCctvModalOpen(false)}
+              camera={selectedCamera || {}}
+            />
+          </>
         ) : activeTab === 'Drivers' ? (
           <DriversManagement />
         ) : activeTab === 'Conductors' ? (
           <ConductorsManagement />
+        ) : activeTab === 'Vehicles' ? (
+          <FleetManagement />
         ) : activeTab === 'Overview' ? (
           <>
             <section className="grid gap-4 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
@@ -530,6 +714,11 @@ export default function OperatorDashboard() {
             </section>
             <ActiveVehicles />
           </>
+        ) : activeTab === 'Analytics' ? (
+          <section className="grid gap-4 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+            <PerformanceOverview />
+            <MonthlyStatistics />
+          </section>
         ) : (
           <section className="rounded-3xl bg-white/95 p-8 shadow-xl shadow-sky-900/20">
             <p className="text-sm text-slate-600">{activeTab} content coming soon.</p>
