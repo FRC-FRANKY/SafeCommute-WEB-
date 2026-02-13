@@ -1,4 +1,5 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Activity,
   Bell,
@@ -56,6 +57,13 @@ function TopNav() {
 
         <button
           type="button"
+          className="rounded-full bg-slate-50 p-2 text-slate-500 shadow-sm hover:bg-slate-100"
+        >
+          <Settings size={18} />
+        </button>
+
+        <button
+          type="button"
           className="rounded-full bg-rose-50 p-2 text-rose-500 shadow-sm hover:bg-rose-100"
         >
           <LogOut size={18} />
@@ -81,14 +89,14 @@ function KpiCard({ label, value, tone }) {
   )
 }
 
-function QuickActionRow() {
+function QuickActionRow({ onManageCommuters, onOperators, onDatabase }) {
   const actions = [
-    { label: 'Settings', icon: <Settings size={16} /> },
-    { label: 'Manage Commuters', icon: <Users size={16} /> },
-    { label: 'Operators', icon: <UserCircle2 size={16} /> },
-    { label: 'Database', icon: <Database size={16} /> },
-    { label: 'Reports', icon: <FileText size={16} /> },
-    { label: 'Logs', icon: <Activity size={16} /> },
+    { label: 'Settings', icon: <Settings size={16} />, onClick: () => {} },
+    { label: 'Manage Commuters', icon: <Users size={16} />, onClick: onManageCommuters },
+    { label: 'Operators', icon: <UserCircle2 size={16} />, onClick: onOperators },
+    { label: 'Database', icon: <Database size={16} />, onClick: onDatabase },
+    { label: 'Reports', icon: <FileText size={16} />, onClick: () => {} },
+    { label: 'Logs', icon: <Activity size={16} />, onClick: () => {} },
   ]
 
   return (
@@ -98,6 +106,7 @@ function QuickActionRow() {
           <button
             key={action.label}
             type="button"
+            onClick={action.onClick}
             className="flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-sky-50 hover:text-sky-700"
           >
             {action.icon}
@@ -245,6 +254,8 @@ function RecentActivity() {
 }
 
 export default function AdminDashboard() {
+  const navigate = useNavigate()
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-400 via-sky-500 to-sky-700 px-6 py-6">
       <div className="mx-auto flex max-w-6xl flex-col gap-5">
@@ -257,7 +268,11 @@ export default function AdminDashboard() {
           <KpiCard label="Active Users" value="8,456" tone="amber" />
         </section>
 
-        <QuickActionRow />
+        <QuickActionRow
+          onManageCommuters={() => navigate('/admin-commuters')}
+          onOperators={() => navigate('/admin-operators')}
+          onDatabase={() => navigate('/admin-database')}
+        />
 
         <section className="grid gap-4 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
           <SystemHealthCard />

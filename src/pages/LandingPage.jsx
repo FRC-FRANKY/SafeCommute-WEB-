@@ -44,7 +44,7 @@ export default function LandingPage() {
           SafeCommute+ Portal
         </h1>
 
-        <section className="grid w-full gap-6 md:grid-cols-2">
+        <section className="grid w-full gap-3 md:grid-cols-2">
           <AccessCard
             title="Operator Access"
             description="Manage transport operations, routes, fleet, and real‑time safety events."
@@ -76,7 +76,7 @@ export default function LandingPage() {
         <BusScene />
 
         <p className="mt-2 text-xs font-medium uppercase tracking-[0.25em] text-sky-100">
-          SafeCommute+ Operator Portal v1.0 • Secure Access Only
+          SafeCommute+ Portal v1.0 • Secure Access Only
         </p>
       </div>
     </div>

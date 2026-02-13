@@ -1,4 +1,4 @@
-  import React from 'react'
+import React, { useState } from 'react'
 import {
   Activity,
   Bell,
@@ -6,9 +6,13 @@ import {
   Compass,
   LogOut,
   MapPin,
+  MoreVertical,
   Search,
+  Settings,
   UserCircle2,
+  UserPlus,
   Users,
+  Video,
 } from 'lucide-react'
 
 function TopNav() {
@@ -54,6 +58,13 @@ function TopNav() {
 
         <button
           type="button"
+          className="rounded-full bg-slate-50 p-2 text-slate-500 shadow-sm hover:bg-slate-100"
+        >
+          <Settings size={18} />
+        </button>
+
+        <button
+          type="button"
           className="rounded-full bg-rose-50 p-2 text-rose-500 shadow-sm hover:bg-rose-100"
         >
           <LogOut size={18} />
@@ -88,17 +99,18 @@ function StatCard({ label, value, icon, tone }) {
   )
 }
 
-function TabStrip() {
+function TabStrip({ activeTab, onTabChange }) {
   const tabs = ['Overview', 'CCTV Monitoring', 'Drivers', 'Conductors', 'Vehicles', 'Analytics']
 
   return (
     <nav className="flex gap-2 rounded-2xl bg-white/80 px-2 py-2 text-xs font-medium text-slate-500 shadow-md">
       {tabs.map((tab) => {
-        const active = tab === 'Overview'
+        const active = tab === activeTab
         return (
           <button
             key={tab}
             type="button"
+            onClick={() => onTabChange(tab)}
             className={`rounded-full px-4 py-1.5 transition ${
               active
                 ? 'bg-sky-600 text-white shadow-sm'
@@ -110,6 +122,216 @@ function TabStrip() {
         )
       })}
     </nav>
+  )
+}
+
+function CCTVMonitoring() {
+  const cameras = [
+    { bus: '17', position: 'Front', resolution: 'HD', recording: true, status: 'online', lastUpdate: 'John Doe • 5 mins ago' },
+    { bus: '42', position: 'Front', resolution: 'HD', recording: true, status: 'online', lastUpdate: 'Admin User • Yesterday' },
+    { bus: '42', position: 'Interior', resolution: 'HD', recording: false, status: 'offline', lastUpdate: 'Tech Support • 2 days ago' },
+    { bus: '23', position: 'Front', resolution: 'HD', recording: true, status: 'online', lastUpdate: 'John Doe • 12 mins ago' },
+    { bus: '23', position: 'Interior', resolution: 'HD', recording: true, status: 'online', lastUpdate: 'Admin User • 1 hr ago' },
+    { bus: '08', position: 'Front', resolution: 'HD', recording: false, status: 'maintenance', lastUpdate: 'Tech Support • 2 days ago' },
+  ]
+
+  const statusStyles = {
+    online: 'bg-emerald-50 text-emerald-700',
+    offline: 'bg-rose-50 text-rose-700',
+    maintenance: 'bg-slate-100 text-slate-600',
+  }
+
+  return (
+    <section className="rounded-3xl bg-white/95 p-5 shadow-xl shadow-sky-900/20">
+      <h2 className="mb-4 text-sm font-semibold text-slate-900">CCTV Monitoring</h2>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {cameras.map((cam, i) => (
+          <article
+            key={`${cam.bus}-${cam.position}-${i}`}
+            className="flex flex-col gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:shadow-md"
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-2">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
+                  <Video size={18} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">Bus {cam.bus} – {cam.position}</p>
+                  <p className="text-[11px] text-slate-500">{cam.resolution}</p>
+                </div>
+              </div>
+              <span
+                className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold capitalize ${statusStyles[cam.status]}`}
+              >
+                {cam.status}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-[11px] text-slate-600">
+              <span>Recording: {cam.recording ? 'Yes' : 'No'}</span>
+            </div>
+            <p className="text-[11px] text-slate-500">Last: {cam.lastUpdate}</p>
+            <button
+              type="button"
+              className="mt-auto w-full rounded-full bg-sky-50 py-2 text-xs font-medium text-sky-700 transition hover:bg-sky-100"
+            >
+              View
+            </button>
+          </article>
+        )        )}
+      </div>
+    </section>
+  )
+}
+
+function ConductorsManagement() {
+  const conductors = [
+    { id: 'CON-1892', name: 'Priya Sharma', experience: '5 years', status: 'on-duty', vehicle: 'Bus 17' },
+    { id: 'CON-2104', name: 'Anita Desai', experience: '6 years', status: 'off-duty', vehicle: '-' },
+    { id: 'CON-1675', name: 'Lakshmi Reddy', experience: '4 years', status: 'on-duty', vehicle: 'Bus 42' },
+    { id: 'CON-1956', name: 'Meera Patel', experience: '7 years', status: 'off-duty', vehicle: '-' },
+    { id: 'CON-2231', name: 'Kavita Nair', experience: '3 years', status: 'on-duty', vehicle: 'Bus 08' },
+  ]
+
+  const statusStyles = {
+    'on-duty': 'bg-emerald-50 text-emerald-700',
+    'off-duty': 'bg-slate-100 text-slate-600',
+  }
+
+  return (
+    <section className="rounded-3xl bg-white/95 p-5 shadow-xl shadow-sky-900/20">
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <h2 className="text-sm font-semibold text-slate-900">Conductors Management</h2>
+        <button
+          type="button"
+          className="inline-flex items-center gap-2 rounded-full bg-sky-600 px-4 py-2 text-xs font-medium text-white shadow-md transition hover:bg-sky-700"
+        >
+          <UserPlus size={16} />
+          Add Conductor
+        </button>
+      </div>
+
+      <div className="overflow-x-auto rounded-2xl border border-slate-100">
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="border-b border-slate-100 bg-slate-50/80">
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Conductor ID</th>
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Name</th>
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Experience</th>
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Status</th>
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Current Vehicle</th>
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {conductors.map((c) => (
+              <tr key={c.id} className="border-b border-slate-50 transition hover:bg-slate-50/50">
+                <td className="px-4 py-3 text-slate-600">{c.id}</td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-100 text-xs font-semibold text-sky-700">
+                      {c.name.split(' ').map((n) => n[0]).join('')}
+                    </div>
+                    <span className="font-medium text-slate-900">{c.name}</span>
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-slate-600">{c.experience}</td>
+                <td className="px-4 py-3">
+                  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${statusStyles[c.status]}`}>
+                    {c.status === 'on-duty' ? 'On Duty' : 'Off Duty'}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-slate-600">{c.vehicle}</td>
+                <td className="px-4 py-3">
+                  <button
+                    type="button"
+                    className="rounded-full p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                    title="More actions"
+                  >
+                    <MoreVertical size={16} />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )
+}
+
+function DriversManagement() {
+  const drivers = [
+    { id: 'DRV-001', name: 'Rajesh Kumar', experience: '8 years', status: 'on-duty', vehicle: 'Bus 17' },
+    { id: 'DRV-002', name: 'Mohammed Ali', experience: '5 years', status: 'off-duty', vehicle: '-' },
+    { id: 'DRV-003', name: 'Suresh Patel', experience: '12 years', status: 'on-duty', vehicle: 'Bus 24A' },
+    { id: 'DRV-004', name: 'Maria Santos', experience: '3 years', status: 'off-duty', vehicle: '-' },
+    { id: 'DRV-005', name: 'James Wilson', experience: '6 years', status: 'on-duty', vehicle: 'Bus 08' },
+  ]
+
+  const statusStyles = {
+    'on-duty': 'bg-emerald-50 text-emerald-700',
+    'off-duty': 'bg-slate-100 text-slate-600',
+  }
+
+  return (
+    <section className="rounded-3xl bg-white/95 p-5 shadow-xl shadow-sky-900/20">
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <h2 className="text-sm font-semibold text-slate-900">Drivers Management</h2>
+        <button
+          type="button"
+          className="inline-flex items-center gap-2 rounded-full bg-sky-600 px-4 py-2 text-xs font-medium text-white shadow-md transition hover:bg-sky-700"
+        >
+          <UserPlus size={16} />
+          Add Driver
+        </button>
+      </div>
+
+      <div className="overflow-x-auto rounded-2xl border border-slate-100">
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="border-b border-slate-100 bg-slate-50/80">
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Driver ID</th>
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Name</th>
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Experience</th>
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Status</th>
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Current Vehicle</th>
+              <th className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {drivers.map((d) => (
+              <tr key={d.id} className="border-b border-slate-50 transition hover:bg-slate-50/50">
+                <td className="px-4 py-3 text-slate-600">{d.id}</td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-100 text-xs font-semibold text-sky-700">
+                      {d.name.split(' ').map((n) => n[0]).join('')}
+                    </div>
+                    <span className="font-medium text-slate-900">{d.name}</span>
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-slate-600">{d.experience}</td>
+                <td className="px-4 py-3">
+                  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${statusStyles[d.status]}`}>
+                    {d.status === 'on-duty' ? 'On Duty' : 'Off Duty'}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-slate-600">{d.vehicle}</td>
+                <td className="px-4 py-3">
+                  <button
+                    type="button"
+                    className="rounded-full p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                    title="More actions"
+                  >
+                    <MoreVertical size={16} />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   )
 }
 
@@ -263,6 +485,8 @@ function ActiveVehicles() {
 }
 
 export default function OperatorDashboard() {
+  const [activeTab, setActiveTab] = useState('CCTV Monitoring')
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-400 via-sky-500 to-sky-700 px-6 py-6">
       <div className="mx-auto flex max-w-6xl flex-col gap-5">
@@ -290,14 +514,27 @@ export default function OperatorDashboard() {
           />
         </section>
 
-        <TabStrip />
+        <TabStrip activeTab={activeTab} onTabChange={setActiveTab} />
 
-        <section className="grid gap-4 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-          <RecentAlerts />
-          <QuickActions />
-        </section>
-
-        <ActiveVehicles />
+        {activeTab === 'CCTV Monitoring' ? (
+          <CCTVMonitoring />
+        ) : activeTab === 'Drivers' ? (
+          <DriversManagement />
+        ) : activeTab === 'Conductors' ? (
+          <ConductorsManagement />
+        ) : activeTab === 'Overview' ? (
+          <>
+            <section className="grid gap-4 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+              <RecentAlerts />
+              <QuickActions />
+            </section>
+            <ActiveVehicles />
+          </>
+        ) : (
+          <section className="rounded-3xl bg-white/95 p-8 shadow-xl shadow-sky-900/20">
+            <p className="text-sm text-slate-600">{activeTab} content coming soon.</p>
+          </section>
+        )}
       </div>
     </div>
   )
