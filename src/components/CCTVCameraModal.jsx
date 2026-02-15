@@ -245,6 +245,10 @@ function AccessHistory() {
 export default function CCTVCameraModal({ open, onClose, camera = {} }) {
   const vehicle = camera.bus ? `Bus ${camera.bus}` : camera.vehicle ? `Bus ${camera.vehicle}` : 'Bus 17'
   const position = camera.position || 'Front'
+  const status = camera.status || 'online'
+  const hasOutput = status === 'online'
+  const isOfflineOrMaintenance = status === 'offline' || status === 'maintenance'
+  const riskDetected = hasOutput && (camera.bus === '17' && camera.position === 'Front')
 
   useEffect(() => {
     if (!open) return
@@ -275,36 +279,61 @@ export default function CCTVCameraModal({ open, onClose, camera = {} }) {
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <Badge variant="blue">CAM-001</Badge>
           <span className="text-sm text-slate-700">{vehicle} - {position}</span>
-          <Badge variant="green">
-            <Wifi size={12} strokeWidth={2.5} />
-            Online
-          </Badge>
-          <Badge variant="purple">HD</Badge>
-          <Badge variant="red">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-500 opacity-75" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-rose-500" />
-            </span>
-            Recording
-          </Badge>
+          {hasOutput && (
+            <>
+              <Badge variant="green">
+                <Wifi size={12} strokeWidth={2.5} />
+                Online
+              </Badge>
+              <Badge variant="purple">HD</Badge>
+              <Badge variant="red">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-500 opacity-75" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-rose-500" />
+                </span>
+                Recording
+              </Badge>
+            </>
+          )}
         </div>
 
-        <div className="mt-5">
-          <VideoPanel vehicle={vehicle} position={position} />
-        </div>
+        {isOfflineOrMaintenance && (
+          <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center">
+            <Video size={40} className="mx-auto mb-2 text-amber-600" strokeWidth={1.5} />
+            <p className="text-sm font-semibold text-amber-800">Camera offline or under maintenance</p>
+            <p className="mt-1 text-xs text-amber-700">
+              No camera output is available for {vehicle} – {position}. Please try again later or contact support.
+            </p>
+          </div>
+        )}
 
-        <div className="mt-5">
-          <Controls isPlaying />
-        </div>
+        {hasOutput && !riskDetected && (
+          <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-center">
+            <AlertTriangle size={40} className="mx-auto mb-2 text-emerald-600" />
+            <p className="text-sm font-semibold text-emerald-800">No safety incidents detected</p>
+            <p className="mt-1 text-xs text-emerald-700">
+              The system has analyzed the camera feed. No safety risks were found for {vehicle} – {position}.
+            </p>
+          </div>
+        )}
 
-        <div className="mt-6">
-          <InfoCards vehicle={vehicle} position={position} />
-        </div>
-
-        <div className="mt-6 grid gap-6 sm:grid-cols-2">
-          <ActivityList />
-          <AccessHistory />
-        </div>
+        {hasOutput && riskDetected && (
+          <>
+            <div className="mt-5">
+              <VideoPanel vehicle={vehicle} position={position} />
+            </div>
+            <div className="mt-5">
+              <Controls isPlaying />
+            </div>
+            <div className="mt-6">
+              <InfoCards vehicle={vehicle} position={position} />
+            </div>
+            <div className="mt-6 grid gap-6 sm:grid-cols-2">
+              <ActivityList />
+              <AccessHistory />
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

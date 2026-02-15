@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import CCTVCameraModal from '../components/CCTVCameraModal.jsx'
 import {
   Activity,
   Bell,
   BusFront,
   Clock,
-  Compass,
   LogOut,
   MapPin,
   MoreVertical,
@@ -20,7 +20,53 @@ import {
   Wrench,
 } from 'lucide-react'
 
-function TopNav() {
+function LogoutConfirmModal({ open, onClose, onConfirm }) {
+  if (!open) return null
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div
+        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+        onClick={onClose}
+        onKeyDown={(e) => e.key === 'Escape' && onClose()}
+        role="button"
+        tabIndex={0}
+        aria-label="Close"
+      />
+      <div
+        className="relative max-w-sm rounded-2xl bg-white p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-100 text-rose-600">
+            <LogOut size={20} />
+          </div>
+          <h2 className="text-lg font-semibold text-slate-900">Confirm logout?</h2>
+        </div>
+        <p className="mb-6 text-sm text-slate-600">
+          Are you sure you want to end your session? You will need to sign in again to access the dashboard.
+        </p>
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-full border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="flex-1 rounded-full bg-rose-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-rose-700"
+          >
+            Log out
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function TopNav({ onLogout }) {
   return (
     <header className="flex items-center justify-between rounded-3xl bg-white/95 px-6 py-4 shadow-xl shadow-sky-900/25">
       <div className="flex items-center gap-3">
@@ -70,6 +116,7 @@ function TopNav() {
 
         <button
           type="button"
+          onClick={onLogout}
           className="rounded-full bg-rose-50 p-2 text-rose-500 shadow-sm hover:bg-rose-100"
         >
           <LogOut size={18} />
@@ -194,18 +241,42 @@ function CCTVMonitoring({ onViewCamera }) {
   )
 }
 
-function ConductorsManagement() {
-  const conductors = [
-    { id: 'CON-1892', name: 'Priya Sharma', experience: '5 years', status: 'on-duty', vehicle: 'Bus 17' },
-    { id: 'CON-2104', name: 'Anita Desai', experience: '6 years', status: 'off-duty', vehicle: '-' },
-    { id: 'CON-1675', name: 'Lakshmi Reddy', experience: '4 years', status: 'on-duty', vehicle: 'Bus 42' },
-    { id: 'CON-1956', name: 'Meera Patel', experience: '7 years', status: 'off-duty', vehicle: '-' },
-    { id: 'CON-2231', name: 'Kavita Nair', experience: '3 years', status: 'on-duty', vehicle: 'Bus 08' },
-  ]
+function ConductorsManagement({ conductors, setConductors }) {
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editing, setEditing] = useState(null)
+  const [form, setForm] = useState({ id: '', name: '', experience: '', status: 'off-duty', vehicle: '' })
+  const [formError, setFormError] = useState('')
 
   const statusStyles = {
     'on-duty': 'bg-emerald-50 text-emerald-700',
     'off-duty': 'bg-slate-100 text-slate-600',
+  }
+
+  const openAdd = () => {
+    setEditing(null)
+    setForm({ id: '', name: '', experience: '', status: 'off-duty', vehicle: '' })
+    setFormError('')
+    setModalOpen(true)
+  }
+  const openConfigure = (c) => {
+    setEditing(c)
+    setForm({ id: c.id, name: c.name, experience: c.experience, status: c.status, vehicle: c.vehicle })
+    setFormError('')
+    setModalOpen(true)
+  }
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (!form.id.trim() || !form.name.trim() || !form.experience.trim() || !form.vehicle.trim()) {
+      setFormError('Please complete all required fields. Information is incomplete.')
+      return
+    }
+    setFormError('')
+    if (editing) {
+      setConductors((prev) => prev.map((c) => (c.id === editing.id ? { ...form } : c)))
+    } else {
+      setConductors((prev) => [...prev, { ...form }])
+    }
+    setModalOpen(false)
   }
 
   return (
@@ -214,6 +285,7 @@ function ConductorsManagement() {
         <h2 className="text-sm font-semibold text-slate-900">Conductors Management</h2>
         <button
           type="button"
+          onClick={openAdd}
           className="inline-flex items-center gap-2 rounded-full bg-sky-600 px-4 py-2 text-xs font-medium text-white shadow-md transition hover:bg-sky-700"
         >
           <UserPlus size={16} />
@@ -255,8 +327,9 @@ function ConductorsManagement() {
                 <td className="px-4 py-3">
                   <button
                     type="button"
+                    onClick={() => openConfigure(c)}
                     className="rounded-full p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
-                    title="More actions"
+                    title="Configure conductor"
                   >
                     <MoreVertical size={16} />
                   </button>
@@ -266,18 +339,117 @@ function ConductorsManagement() {
           </tbody>
         </table>
       </div>
+
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setModalOpen(false)} aria-hidden />
+          <div className="relative max-w-md w-full rounded-2xl bg-white p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="mb-4 text-lg font-semibold text-slate-900">{editing ? 'Configure Conductor' : 'Add Conductor'}</h3>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {formError && <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700">{formError}</p>}
+              <label className="block text-sm">
+                <span className="font-medium text-slate-700">Conductor ID *</span>
+                <input
+                  type="text"
+                  value={form.id}
+                  onChange={(e) => setForm((p) => ({ ...p, id: e.target.value }))}
+                  className="mt-1 w-full rounded-full border border-slate-200 px-4 py-2 text-sm"
+                  required
+                  disabled={!!editing}
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="font-medium text-slate-700">Name *</span>
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+                  className="mt-1 w-full rounded-full border border-slate-200 px-4 py-2 text-sm"
+                  required
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="font-medium text-slate-700">Experience *</span>
+                <input
+                  type="text"
+                  value={form.experience}
+                  onChange={(e) => setForm((p) => ({ ...p, experience: e.target.value }))}
+                  placeholder="e.g. 5 years"
+                  className="mt-1 w-full rounded-full border border-slate-200 px-4 py-2 text-sm"
+                  required
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="font-medium text-slate-700">Status *</span>
+                <select
+                  value={form.status}
+                  onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))}
+                  className="mt-1 w-full rounded-full border border-slate-200 px-4 py-2 text-sm"
+                >
+                  <option value="on-duty">On Duty</option>
+                  <option value="off-duty">Off Duty</option>
+                </select>
+              </label>
+              <label className="block text-sm">
+                <span className="font-medium text-slate-700">Current Vehicle *</span>
+                <input
+                  type="text"
+                  value={form.vehicle}
+                  onChange={(e) => setForm((p) => ({ ...p, vehicle: e.target.value }))}
+                  placeholder="e.g. Bus 17 or -"
+                  className="mt-1 w-full rounded-full border border-slate-200 px-4 py-2 text-sm"
+                  required
+                />
+              </label>
+              <div className="flex gap-2 pt-2">
+                <button type="button" onClick={() => setModalOpen(false)} className="flex-1 rounded-full border border-slate-300 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                  Cancel
+                </button>
+                <button type="submit" className="flex-1 rounded-full bg-sky-600 py-2 text-sm font-medium text-white hover:bg-sky-700">
+                  {editing ? 'Update' : 'Add'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </section>
   )
 }
 
-function FleetManagement() {
-  const vehicles = [
-    { id: 'Bus 17', route: 'Blue Line Express', gpsStatus: 'active', capacity: '45/60', location: 'Central Station', lastMaintenance: '2 days ago' },
-    { id: 'Bus 23', route: 'Downtown Loop', gpsStatus: 'active', capacity: '-', location: 'Depot', lastMaintenance: 'Today' },
-    { id: 'Bus 42', route: 'Airport Shuttle', gpsStatus: 'active', capacity: '52/60', location: 'North Terminal', lastMaintenance: '5 days ago' },
-    { id: 'Bus 08', route: 'Coastal Express', gpsStatus: 'active', capacity: '38/60', location: 'South Hub', lastMaintenance: '1 day ago' },
-    { id: 'Bus 24A', route: 'Inner City', gpsStatus: 'active', capacity: '60/60', location: 'Bay 3', lastMaintenance: '3 days ago' },
-  ]
+function FleetManagement({ vehicles, setVehicles }) {
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editing, setEditing] = useState(null)
+  const [form, setForm] = useState({ id: '', route: '', capacity: '', location: '', lastMaintenance: '' })
+  const [formError, setFormError] = useState('')
+
+  const openAdd = () => {
+    setEditing(null)
+    setForm({ id: '', route: '', capacity: '', location: '', lastMaintenance: '' })
+    setFormError('')
+    setModalOpen(true)
+  }
+  const openConfigure = (v) => {
+    setEditing(v)
+    setForm({ id: v.id, route: v.route, capacity: v.capacity, location: v.location, lastMaintenance: v.lastMaintenance })
+    setFormError('')
+    setModalOpen(true)
+  }
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (!form.id.trim() || !form.route.trim() || !form.capacity.trim() || !form.location.trim() || !form.lastMaintenance.trim()) {
+      setFormError('Please complete all required fields. Information is incomplete.')
+      return
+    }
+    setFormError('')
+    const payload = { ...form, gpsStatus: 'active' }
+    if (editing) {
+      setVehicles((prev) => prev.map((v) => (v.id === editing.id ? payload : v)))
+    } else {
+      setVehicles((prev) => [...prev, payload])
+    }
+    setModalOpen(false)
+  }
 
   return (
     <section className="rounded-3xl bg-white/95 p-5 shadow-xl shadow-sky-900/20">
@@ -285,6 +457,7 @@ function FleetManagement() {
         <h2 className="text-sm font-semibold text-slate-900">Fleet Management</h2>
         <button
           type="button"
+          onClick={openAdd}
           className="inline-flex items-center gap-2 rounded-full bg-sky-600 px-4 py-2 text-xs font-medium text-white shadow-md transition hover:bg-sky-700"
         >
           <BusFront size={16} />
@@ -326,8 +499,9 @@ function FleetManagement() {
                 <td className="px-4 py-3">
                   <button
                     type="button"
+                    onClick={() => openConfigure(v)}
                     className="rounded-full p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
-                    title="Maintenance"
+                    title="Configure vehicle"
                   >
                     <Wrench size={16} />
                   </button>
@@ -337,22 +511,120 @@ function FleetManagement() {
           </tbody>
         </table>
       </div>
+
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setModalOpen(false)} aria-hidden />
+          <div className="relative max-w-md w-full rounded-2xl bg-white p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="mb-4 text-lg font-semibold text-slate-900">{editing ? 'Configure Vehicle' : 'Add Vehicle'}</h3>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {formError && <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700">{formError}</p>}
+              <label className="block text-sm">
+                <span className="font-medium text-slate-700">Vehicle ID *</span>
+                <input
+                  type="text"
+                  value={form.id}
+                  onChange={(e) => setForm((p) => ({ ...p, id: e.target.value }))}
+                  placeholder="e.g. Bus 17"
+                  className="mt-1 w-full rounded-full border border-slate-200 px-4 py-2 text-sm"
+                  required
+                  disabled={!!editing}
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="font-medium text-slate-700">Route *</span>
+                <input
+                  type="text"
+                  value={form.route}
+                  onChange={(e) => setForm((p) => ({ ...p, route: e.target.value }))}
+                  className="mt-1 w-full rounded-full border border-slate-200 px-4 py-2 text-sm"
+                  required
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="font-medium text-slate-700">Capacity *</span>
+                <input
+                  type="text"
+                  value={form.capacity}
+                  onChange={(e) => setForm((p) => ({ ...p, capacity: e.target.value }))}
+                  placeholder="e.g. 45/60 or -"
+                  className="mt-1 w-full rounded-full border border-slate-200 px-4 py-2 text-sm"
+                  required
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="font-medium text-slate-700">Location *</span>
+                <input
+                  type="text"
+                  value={form.location}
+                  onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))}
+                  className="mt-1 w-full rounded-full border border-slate-200 px-4 py-2 text-sm"
+                  required
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="font-medium text-slate-700">Last Maintenance *</span>
+                <input
+                  type="text"
+                  value={form.lastMaintenance}
+                  onChange={(e) => setForm((p) => ({ ...p, lastMaintenance: e.target.value }))}
+                  placeholder="e.g. 2 days ago"
+                  className="mt-1 w-full rounded-full border border-slate-200 px-4 py-2 text-sm"
+                  required
+                />
+              </label>
+              <div className="flex gap-2 pt-2">
+                <button type="button" onClick={() => setModalOpen(false)} className="flex-1 rounded-full border border-slate-300 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                  Cancel
+                </button>
+                <button type="submit" className="flex-1 rounded-full bg-sky-600 py-2 text-sm font-medium text-white hover:bg-sky-700">
+                  {editing ? 'Update' : 'Add'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </section>
   )
 }
 
-function DriversManagement() {
-  const drivers = [
-    { id: 'DRV-001', name: 'Rajesh Kumar', experience: '8 years', status: 'on-duty', vehicle: 'Bus 17' },
-    { id: 'DRV-002', name: 'Mohammed Ali', experience: '5 years', status: 'off-duty', vehicle: '-' },
-    { id: 'DRV-003', name: 'Suresh Patel', experience: '12 years', status: 'on-duty', vehicle: 'Bus 24A' },
-    { id: 'DRV-004', name: 'Maria Santos', experience: '3 years', status: 'off-duty', vehicle: '-' },
-    { id: 'DRV-005', name: 'James Wilson', experience: '6 years', status: 'on-duty', vehicle: 'Bus 08' },
-  ]
+function DriversManagement({ drivers, setDrivers }) {
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editing, setEditing] = useState(null)
+  const [form, setForm] = useState({ id: '', name: '', experience: '', status: 'off-duty', vehicle: '' })
+  const [formError, setFormError] = useState('')
 
   const statusStyles = {
     'on-duty': 'bg-emerald-50 text-emerald-700',
     'off-duty': 'bg-slate-100 text-slate-600',
+  }
+
+  const openAdd = () => {
+    setEditing(null)
+    setForm({ id: '', name: '', experience: '', status: 'off-duty', vehicle: '' })
+    setFormError('')
+    setModalOpen(true)
+  }
+  const openConfigure = (d) => {
+    setEditing(d)
+    setForm({ id: d.id, name: d.name, experience: d.experience, status: d.status, vehicle: d.vehicle })
+    setFormError('')
+    setModalOpen(true)
+  }
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (!form.id.trim() || !form.name.trim() || !form.experience.trim() || !form.vehicle.trim()) {
+      setFormError('Please complete all required fields. Information is incomplete.')
+      return
+    }
+    setFormError('')
+    if (editing) {
+      setDrivers((prev) => prev.map((d) => (d.id === editing.id ? { ...form } : d)))
+    } else {
+      setDrivers((prev) => [...prev, { ...form }])
+    }
+    setModalOpen(false)
   }
 
   return (
@@ -361,6 +633,7 @@ function DriversManagement() {
         <h2 className="text-sm font-semibold text-slate-900">Drivers Management</h2>
         <button
           type="button"
+          onClick={openAdd}
           className="inline-flex items-center gap-2 rounded-full bg-sky-600 px-4 py-2 text-xs font-medium text-white shadow-md transition hover:bg-sky-700"
         >
           <UserPlus size={16} />
@@ -402,8 +675,9 @@ function DriversManagement() {
                 <td className="px-4 py-3">
                   <button
                     type="button"
+                    onClick={() => openConfigure(d)}
                     className="rounded-full p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
-                    title="More actions"
+                    title="Configure driver"
                   >
                     <MoreVertical size={16} />
                   </button>
@@ -413,6 +687,80 @@ function DriversManagement() {
           </tbody>
         </table>
       </div>
+
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setModalOpen(false)} aria-hidden />
+          <div className="relative max-w-md w-full rounded-2xl bg-white p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="mb-4 text-lg font-semibold text-slate-900">{editing ? 'Configure Driver' : 'Add Driver'}</h3>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {formError && <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700">{formError}</p>}
+              <label className="block text-sm">
+                <span className="font-medium text-slate-700">Driver ID *</span>
+                <input
+                  type="text"
+                  value={form.id}
+                  onChange={(e) => setForm((p) => ({ ...p, id: e.target.value }))}
+                  className="mt-1 w-full rounded-full border border-slate-200 px-4 py-2 text-sm"
+                  required
+                  disabled={!!editing}
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="font-medium text-slate-700">Name *</span>
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+                  className="mt-1 w-full rounded-full border border-slate-200 px-4 py-2 text-sm"
+                  required
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="font-medium text-slate-700">Experience *</span>
+                <input
+                  type="text"
+                  value={form.experience}
+                  onChange={(e) => setForm((p) => ({ ...p, experience: e.target.value }))}
+                  placeholder="e.g. 5 years"
+                  className="mt-1 w-full rounded-full border border-slate-200 px-4 py-2 text-sm"
+                  required
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="font-medium text-slate-700">Status *</span>
+                <select
+                  value={form.status}
+                  onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))}
+                  className="mt-1 w-full rounded-full border border-slate-200 px-4 py-2 text-sm"
+                >
+                  <option value="on-duty">On Duty</option>
+                  <option value="off-duty">Off Duty</option>
+                </select>
+              </label>
+              <label className="block text-sm">
+                <span className="font-medium text-slate-700">Current Vehicle *</span>
+                <input
+                  type="text"
+                  value={form.vehicle}
+                  onChange={(e) => setForm((p) => ({ ...p, vehicle: e.target.value }))}
+                  placeholder="e.g. Bus 17 or -"
+                  className="mt-1 w-full rounded-full border border-slate-200 px-4 py-2 text-sm"
+                  required
+                />
+              </label>
+              <div className="flex gap-2 pt-2">
+                <button type="button" onClick={() => setModalOpen(false)} className="flex-1 rounded-full border border-slate-300 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                  Cancel
+                </button>
+                <button type="submit" className="flex-1 rounded-full bg-sky-600 py-2 text-sm font-medium text-white hover:bg-sky-700">
+                  {editing ? 'Update' : 'Add'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </section>
   )
 }
@@ -653,15 +1001,52 @@ function ActiveVehicles() {
   )
 }
 
+const INITIAL_DRIVERS = [
+  { id: 'DRV-001', name: 'Rajesh Kumar', experience: '8 years', status: 'on-duty', vehicle: 'Bus 17' },
+  { id: 'DRV-002', name: 'Mohammed Ali', experience: '5 years', status: 'off-duty', vehicle: '-' },
+  { id: 'DRV-003', name: 'Suresh Patel', experience: '12 years', status: 'on-duty', vehicle: 'Bus 24A' },
+  { id: 'DRV-004', name: 'Maria Santos', experience: '3 years', status: 'off-duty', vehicle: '-' },
+  { id: 'DRV-005', name: 'James Wilson', experience: '6 years', status: 'on-duty', vehicle: 'Bus 08' },
+]
+const INITIAL_CONDUCTORS = [
+  { id: 'CON-1892', name: 'Priya Sharma', experience: '5 years', status: 'on-duty', vehicle: 'Bus 17' },
+  { id: 'CON-2104', name: 'Anita Desai', experience: '6 years', status: 'off-duty', vehicle: '-' },
+  { id: 'CON-1675', name: 'Lakshmi Reddy', experience: '4 years', status: 'on-duty', vehicle: 'Bus 42' },
+  { id: 'CON-1956', name: 'Meera Patel', experience: '7 years', status: 'off-duty', vehicle: '-' },
+  { id: 'CON-2231', name: 'Kavita Nair', experience: '3 years', status: 'on-duty', vehicle: 'Bus 08' },
+]
+const INITIAL_VEHICLES = [
+  { id: 'Bus 17', route: 'Blue Line Express', gpsStatus: 'active', capacity: '45/60', location: 'Central Station', lastMaintenance: '2 days ago' },
+  { id: 'Bus 23', route: 'Downtown Loop', gpsStatus: 'active', capacity: '-', location: 'Depot', lastMaintenance: 'Today' },
+  { id: 'Bus 42', route: 'Airport Shuttle', gpsStatus: 'active', capacity: '52/60', location: 'North Terminal', lastMaintenance: '5 days ago' },
+  { id: 'Bus 08', route: 'Coastal Express', gpsStatus: 'active', capacity: '38/60', location: 'South Hub', lastMaintenance: '1 day ago' },
+  { id: 'Bus 24A', route: 'Inner City', gpsStatus: 'active', capacity: '60/60', location: 'Bay 3', lastMaintenance: '3 days ago' },
+]
+
 export default function OperatorDashboard() {
-  const [activeTab, setActiveTab] = useState('Analytics')
+  const navigate = useNavigate()
+  const [activeTab, setActiveTab] = useState('Overview')
   const [cctvModalOpen, setCctvModalOpen] = useState(false)
   const [selectedCamera, setSelectedCamera] = useState(null)
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
+  const [drivers, setDrivers] = useState(INITIAL_DRIVERS)
+  const [conductors, setConductors] = useState(INITIAL_CONDUCTORS)
+  const [vehicles, setVehicles] = useState(INITIAL_VEHICLES)
+
+  const handleLogoutConfirm = () => {
+    setLogoutConfirmOpen(false)
+    navigate('/operator-login')
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-400 via-sky-500 to-sky-700 px-6 py-6">
       <div className="mx-auto flex max-w-6xl flex-col gap-5">
-        <TopNav />
+        <TopNav onLogout={() => setLogoutConfirmOpen(true)} />
+        <LogoutConfirmModal
+          open={logoutConfirmOpen}
+          onClose={() => setLogoutConfirmOpen(false)}
+          onConfirm={handleLogoutConfirm}
+        />
 
         <section className="grid grid-cols-4 gap-4">
           <StatCard
@@ -701,11 +1086,11 @@ export default function OperatorDashboard() {
             />
           </>
         ) : activeTab === 'Drivers' ? (
-          <DriversManagement />
+          <DriversManagement drivers={drivers} setDrivers={setDrivers} />
         ) : activeTab === 'Conductors' ? (
-          <ConductorsManagement />
+          <ConductorsManagement conductors={conductors} setConductors={setConductors} />
         ) : activeTab === 'Vehicles' ? (
-          <FleetManagement />
+          <FleetManagement vehicles={vehicles} setVehicles={setVehicles} />
         ) : activeTab === 'Overview' ? (
           <>
             <section className="grid gap-4 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">

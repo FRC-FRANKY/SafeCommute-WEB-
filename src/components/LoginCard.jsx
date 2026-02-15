@@ -9,6 +9,7 @@ export default function LoginCard({
   onSubmit,
   buttonLabel = 'Sign In',
   onForgotPassword,
+  onBack,
 }) {
   const [showPassword, setShowPassword] = useState(false)
 
@@ -70,15 +71,26 @@ export default function LoginCard({
         </PrimaryButton>
       </form>
 
-      {onForgotPassword && (
-        <button
-          type="button"
-          onClick={onForgotPassword}
-          className="mt-4 block w-full text-center text-xs font-medium text-sky-700 underline underline-offset-2 hover:text-sky-800"
-        >
-          Forgot Password?
-        </button>
-      )}
+      <div className="mt-4 flex flex-col items-center gap-2">
+        {onForgotPassword && (
+          <button
+            type="button"
+            onClick={onForgotPassword}
+            className="block w-full text-center text-xs font-medium text-sky-700 underline underline-offset-2 hover:text-sky-800"
+          >
+            Forgot Password?
+          </button>
+        )}
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="text-xs font-medium text-slate-500 hover:text-slate-700"
+          >
+            ← Back
+          </button>
+        )}
+      </div>
     </section>
   )
 }
